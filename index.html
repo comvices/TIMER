@@ -3,270 +3,254 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจับเวลาแข่งขัน</title>
+  <title>PRO Racing Timer</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&amp;family=Orbitron:wght@400;700;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    body { box-sizing: border-box; }
-    .font-kanit { font-family: 'Kanit', sans-serif; }
-    .font-digital { font-family: 'Orbitron', monospace; }
-    
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.7; }
-      100% { transform: scale(0.95); opacity: 1; }
+    :root {
+      --neon-cyan: #00f3ff;
+      --neon-pink: #ff007f;
+      --neon-yellow: #fff300;
     }
     
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
+    body {
+      background: #050505;
+      color: white;
+      font-family: 'Kanit', sans-serif;
+      overflow-x: hidden;
     }
 
-    .timer-running { animation: pulse-ring 1s ease-in-out infinite; }
-    .timer-urgent { animation: shake 0.2s ease-in-out infinite; color: #ef4444 !important; }
-    
-    .flash-start { animation: flash-start 0.3s ease-in-out 3; }
-    @keyframes flash-start {
-      0%, 100% { background-color: #10b981; }
-      50% { background-color: #34d399; }
+    .font-digital { font-family: 'Orbitron', sans-serif; }
+
+    /* Glassmorphism Background */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
     }
-    
-    .flash-end { animation: flash-end 0.3s ease-in-out 5; }
-    @keyframes flash-end {
-      0%, 100% { background-color: #ef4444; }
-      50% { background-color: #f87171; }
+
+    /* Glow Effect */
+    .timer-glow-cyan { text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan); color: var(--neon-cyan); }
+    .timer-glow-red { text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink); color: var(--neon-pink); }
+
+    /* Progress Ring Gradient */
+    #progress-ring {
+      transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
+      filter: drop-shadow(0 0 8px var(--neon-cyan));
     }
-    
-    .timer-display { text-shadow: 0 0 20px currentColor; }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.02); opacity: 0.8; }
+    }
+    .running-anim { animation: pulse 1.5s infinite ease-in-out; }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0,0); }
+      25% { transform: translate(-4px, 4px); }
+      75% { transform: translate(4px, -4px); }
+    }
+    .shake-anim { animation: shake 0.1s infinite; }
+
+    /* Custom Input */
+    input[type="number"] {
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #333;
+      transition: all 0.3s;
+    }
+    input[type="number"]:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+      outline: none;
+    }
   </style>
  </head>
- <body class="h-full font-kanit">
-  <div id="app-container" class="h-full w-full overflow-auto flex items-center justify-center p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
-   <div class="w-full max-w-lg">
-    
-    <!-- Header -->
-    <div class="text-center mb-8">
-     <h1 id="timer-title" class="text-3xl md:text-4xl font-bold text-white mb-2">🏆 ระบบจับเวลาแข่งขัน</h1>
-     <p class="text-blue-300 text-sm">เตรียมตัวให้พร้อม แล้วเริ่มเลย!</p>
-    </div>
+ <body class="h-full flex items-center justify-center p-4">
+  
+  <div class="w-full max-w-lg relative">
+    <!-- Decor Background -->
+    <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-pink-500/10 rounded-full blur-[100px]"></div>
 
-    <!-- Timer Display -->
-    <div id="timer-ring" class="relative mx-auto w-64 h-64 md:w-72 md:h-72 mb-8">
-     <div class="absolute inset-0 rounded-full border-4 border-gray-700"></div>
-     <svg class="absolute inset-0 w-full h-full -rotate-90">
-       <circle id="progress-ring" cx="50%" cy="50%" r="45%" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0" class="transition-all duration-300" />
-     </svg>
-     <div class="absolute inset-4 rounded-full bg-gray-900/90 backdrop-blur flex flex-col items-center justify-center">
-      <div id="timer-display" class="font-digital text-5xl md:text-6xl font-bold text-blue-400 timer-display">00:00</div>
-      <div id="timer-status" class="text-gray-400 text-sm mt-2 font-medium uppercase tracking-widest">READY</div>
-     </div>
-    </div>
-
-    <!-- Alert Message -->
-    <div id="alert-message" class="hidden text-center mb-6">
-     <div id="alert-text" class="text-2xl font-bold py-3 px-6 rounded-xl inline-block shadow-2xl"></div>
-    </div>
-
-    <!-- Time Settings -->
-    <div class="bg-gray-800/50 backdrop-blur border border-white/10 rounded-2xl p-6 mb-6">
-     <div class="grid grid-cols-2 gap-4">
-      <div class="space-y-2">
-        <label class="text-gray-300 text-sm font-medium flex items-center gap-2"> <span class="text-green-400">▶</span> เริ่ม (วินาที) </label> 
-        <input type="number" id="start-time" min="0" value="0" class="w-full bg-gray-900 border-2 border-gray-700 rounded-xl px-4 py-3 text-white text-center text-xl font-digital focus:border-green-500 outline-none">
+    <div class="glass-panel rounded-[2rem] p-8 relative z-10">
+      
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <h1 class="text-4xl font-extrabold italic tracking-tighter mb-1 bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
+            SPEED TIMER
+        </h1>
+        <div id="status-badge" class="inline-block px-4 py-1 rounded-full bg-gray-800 text-[10px] uppercase tracking-widest text-gray-400 border border-gray-700">
+            System Ready
+        </div>
       </div>
-      <div class="space-y-2">
-        <label class="text-gray-300 text-sm font-medium flex items-center gap-2"> <span class="text-red-400">⏹</span> จบ (วินาที) </label> 
-        <input type="number" id="end-time" min="1" value="10" class="w-full bg-gray-900 border-2 border-gray-700 rounded-xl px-4 py-3 text-white text-center text-xl font-digital focus:border-red-500 outline-none">
+
+      <!-- Timer Circle -->
+      <div class="relative mx-auto w-72 h-72 mb-8 group">
+        <svg class="absolute inset-0 w-full h-full -rotate-90">
+          <circle cx="50%" cy="50%" r="46%" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="none" />
+          <circle id="progress-ring" cx="50%" cy="50%" r="46%" stroke="var(--neon-cyan)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="828" stroke-dashoffset="0" />
+        </svg>
+        
+        <div id="timer-container" class="absolute inset-0 flex flex-col items-center justify-center">
+          <span id="timer-display" class="font-digital text-7xl font-black timer-glow-cyan transition-all">00:00</span>
+          <span id="mode-indicator" class="text-xs mt-2 text-gray-500 font-bold tracking-widest uppercase">Target Mode</span>
+        </div>
       </div>
-     </div>
-     
-     <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <button id="mode-toggle" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
-            <span id="mode-icon">⬆️</span> <span id="mode-text">นับขึ้น</span>
-        </button>
-        <button id="sound-toggle" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
-            <span id="sound-icon">🔊</span> <span>เสียง: เปิด</span>
-        </button>
-     </div>
-    </div>
 
-    <!-- Control Buttons -->
-    <div class="flex gap-3 justify-center">
-      <button id="start-btn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/30 hover:scale-105 active:scale-95 transition-all">เริ่มการแข่งขัน</button>
-      <button id="pause-btn" class="flex-1 bg-amber-500 text-white font-bold py-4 rounded-xl hidden">หยุดชั่วคราว</button>
-      <button id="resume-btn" class="flex-1 bg-blue-500 text-white font-bold py-4 rounded-xl hidden">แข่งขันต่อ</button>
-      <button id="reset-btn" class="flex-1 bg-gray-600 text-white font-bold py-4 rounded-xl hover:bg-gray-500 transition-all">รีเซ็ต</button>
-    </div>
+      <!-- Control Panel -->
+      <div class="space-y-6">
+        <!-- Input Section -->
+        <div class="flex flex-col items-center gap-3">
+            <label class="text-gray-400 text-sm font-semibold uppercase tracking-wider">ตั้งเวลาแข่งขัน (วินาที)</label>
+            <div class="relative w-full max-w-[200px]">
+                <input type="number" id="duration-input" value="30" min="1" class="w-full py-4 rounded-2xl text-center text-3xl font-digital text-white">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500 font-bold">S</span>
+            </div>
+        </div>
 
-   </div>
+        <!-- Mode & Sound -->
+        <div class="flex justify-center gap-3">
+            <button id="mode-btn" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-bold transition-all border border-gray-600 flex items-center gap-2">
+                <span id="mode-icon">⬇️</span> <span id="mode-text">นับถอยหลัง</span>
+            </button>
+            <button id="sound-btn" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-bold transition-all border border-gray-600 flex items-center gap-2">
+                <span id="sound-icon">🔊</span> เสียง: เปิด
+            </button>
+        </div>
+
+        <!-- Main Actions -->
+        <div class="grid grid-cols-2 gap-4">
+            <button id="main-btn" class="col-span-1 bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-black font-black py-5 rounded-2xl text-xl uppercase tracking-tighter shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all active:scale-95">เริ่ม</button>
+            <button id="reset-btn" class="col-span-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-5 rounded-2xl text-xl uppercase tracking-tighter transition-all">รีเซ็ต</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
-    // Audio Context & Assets
-    const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'); // Whistle
-    const soundEnd = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');   // Buzzer
-    const soundTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'); // Short beep
+    // Audio context
+    const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'); 
+    const soundEnd = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');   
+    const soundTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
 
-    let isSoundEnabled = true;
-    let timerInterval = null;
-    let currentTime = 0;
-    let startTime = 0;
-    let endTime = 10;
-    let isCountingDown = false;
-    let hasStarted = false;
+    let isRunning = false;
+    let isCountDown = true;
+    let isSoundOn = true;
+    let timer = null;
+    let currentSec = 0;
+    let targetSec = 30;
 
-    // DOM Elements
-    const timerDisplay = document.getElementById('timer-display');
-    const timerStatus = document.getElementById('timer-status');
-    const timerRing = document.getElementById('timer-ring');
+    const display = document.getElementById('timer-display');
+    const input = document.getElementById('duration-input');
+    const mainBtn = document.getElementById('main-btn');
+    const resetBtn = document.getElementById('reset-btn');
     const progressRing = document.getElementById('progress-ring');
-    const alertMessage = document.getElementById('alert-message');
-    const alertText = document.getElementById('alert-text');
-    const startTimeInput = document.getElementById('start-time');
-    const endTimeInput = document.getElementById('end-time');
-    const soundToggle = document.getElementById('sound-toggle');
-    const soundIcon = document.getElementById('sound-icon');
-
-    function formatTime(seconds) {
-      const mins = Math.floor(Math.abs(seconds) / 60);
-      const secs = Math.abs(seconds) % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function playSound(audio) {
-      if (isSoundEnabled) {
-        audio.currentTime = 0;
-        audio.play().catch(e => console.log("Audio play blocked"));
-      }
-    }
-
-    function updateProgressRing() {
-      const total = Math.abs(endTime - startTime);
-      const current = isCountingDown ? (endTime - currentTime) : (currentTime - startTime);
-      const progress = Math.max(0, Math.min(1, current / total));
-      const circumference = 283; 
-      progressRing.style.strokeDashoffset = circumference * (1 - progress);
-    }
-
-    function showAlert(msg, type) {
-      alertText.textContent = msg;
-      alertMessage.classList.remove('hidden');
-      if (type === 'start') {
-        alertText.className = 'text-2xl font-bold py-3 px-6 rounded-xl bg-green-500 text-white flash-start shadow-lg';
-        timerRing.classList.add('flash-start');
-        playSound(soundStart);
-      } else {
-        alertText.className = 'text-2xl font-bold py-3 px-6 rounded-xl bg-red-500 text-white flash-end shadow-lg';
-        timerRing.classList.add('flash-end');
-        playSound(soundEnd);
-      }
-      setTimeout(() => {
-        alertMessage.classList.add('hidden');
-        timerRing.classList.remove('flash-start', 'flash-end');
-      }, 2000);
-    }
-
-    function tick() {
-      if (isCountingDown) currentTime--;
-      else currentTime++;
-
-      updateDisplay();
-
-      // เร้าใจ: สั่นเมื่อเหลือ 3 วินาทีสุดท้าย
-      const remaining = isCountingDown ? (currentTime - startTime) : (endTime - currentTime);
-      if (remaining <= 3 && remaining > 0) {
-        timerDisplay.classList.add('timer-urgent');
-        playSound(soundTick);
-      } else {
-        timerDisplay.classList.remove('timer-urgent');
-      }
-
-      // ตรวจสอบเงื่อนไขจบ
-      if ((isCountingDown && currentTime <= startTime) || (!isCountingDown && currentTime >= endTime)) {
-        stopTimer();
-        showAlert('หมดเวลาการแข่งขัน!', 'end');
-        timerStatus.textContent = 'FINISHED';
-        timerDisplay.classList.add('text-red-500');
-      }
-    }
+    const statusBadge = document.getElementById('status-badge');
 
     function updateDisplay() {
-      timerDisplay.textContent = formatTime(currentTime);
-      updateProgressRing();
+        const m = Math.floor(Math.abs(currentSec) / 60);
+        const s = Math.abs(currentSec) % 60;
+        display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        // Progress ring logic
+        const total = parseInt(input.value) || 1;
+        const progress = isCountDown ? (currentSec / total) : (currentSec / total);
+        const offset = 828 - (828 * progress);
+        progressRing.style.strokeDashoffset = isFinite(offset) ? offset : 828;
+
+        // Warning state
+        if (isCountDown && currentSec <= 5 && currentSec > 0) {
+            display.classList.add('shake-anim', 'timer-glow-red');
+            if(isSoundOn) { soundTick.currentTime = 0; soundTick.play(); }
+        } else {
+            display.classList.remove('shake-anim');
+        }
     }
 
     function startTimer() {
-      startTime = parseInt(startTimeInput.value) || 0;
-      endTime = parseInt(endTimeInput.value) || 0;
-      
-      if (endTime <= startTime && !isCountingDown) return;
-      
-      if (!hasStarted) {
-        currentTime = isCountingDown ? endTime : startTime;
-      }
-      
-      hasStarted = true;
-      timerStatus.textContent = 'RUNNING';
-      timerRing.classList.add('timer-running');
-      showAlert('เริ่มการแข่งขัน!', 'start');
-      
-      document.getElementById('start-btn').classList.add('hidden');
-      document.getElementById('pause-btn').classList.remove('hidden');
-      
-      timerInterval = setInterval(tick, 1000);
+        targetSec = parseInt(input.value) || 0;
+        if (targetSec <= 0) return;
+
+        if (!isRunning) {
+            if (currentSec <= 0 || currentSec >= targetSec) {
+                currentSec = isCountDown ? targetSec : 0;
+            }
+            
+            isRunning = true;
+            mainBtn.textContent = "หยุด";
+            mainBtn.classList.replace('from-cyan-400', 'from-yellow-400');
+            statusBadge.textContent = "🏁 Competition Live";
+            statusBadge.classList.replace('bg-gray-800', 'bg-red-900/40');
+            input.disabled = true;
+
+            if(isSoundOn) soundStart.play();
+
+            timer = setInterval(() => {
+                if (isCountDown) currentSec--;
+                else currentSec++;
+
+                updateDisplay();
+
+                if ((isCountDown && currentSec <= 0) || (!isCountDown && currentSec >= targetSec)) {
+                    stopTimer(true);
+                }
+            }, 1000);
+        } else {
+            stopTimer(false);
+        }
     }
 
-    function stopTimer() {
-      clearInterval(timerInterval);
-      timerRing.classList.remove('timer-running');
-      timerDisplay.classList.remove('timer-urgent');
-      document.getElementById('pause-btn').classList.add('hidden');
-      document.getElementById('resume-btn').classList.add('hidden');
-      document.getElementById('start-btn').classList.remove('hidden');
+    function stopTimer(isFinished) {
+        clearInterval(timer);
+        isRunning = false;
+        mainBtn.textContent = "เริ่ม";
+        mainBtn.classList.replace('from-yellow-400', 'from-cyan-400');
+        statusBadge.textContent = isFinished ? "🔚 Finish" : "⏸ Paused";
+        input.disabled = false;
+        
+        if (isFinished) {
+            if(isSoundOn) soundEnd.play();
+            display.classList.add('timer-glow-red');
+            setTimeout(() => display.classList.remove('timer-glow-red'), 3000);
+        }
     }
 
-    // Controls Logic
-    document.getElementById('start-btn').onclick = startTimer;
-    document.getElementById('pause-btn').onclick = () => {
-      clearInterval(timerInterval);
-      timerStatus.textContent = 'PAUSED';
-      document.getElementById('pause-btn').classList.add('hidden');
-      document.getElementById('resume-btn').classList.remove('hidden');
-    };
-    document.getElementById('resume-btn').onclick = () => {
-      timerInterval = setInterval(tick, 1000);
-      timerStatus.textContent = 'RUNNING';
-      document.getElementById('resume-btn').classList.add('hidden');
-      document.getElementById('pause-btn').classList.remove('hidden');
-    };
-    document.getElementById('reset-btn').onclick = () => {
-      stopTimer();
-      hasStarted = false;
-      currentTime = isCountingDown ? (parseInt(endTimeInput.value)||0) : (parseInt(startTimeInput.value)||0);
-      timerDisplay.classList.remove('text-red-500');
-      timerStatus.textContent = 'READY';
-      updateDisplay();
-    };
-
-    document.getElementById('mode-toggle').onclick = function() {
-      isCountingDown = !isCountingDown;
-      this.innerHTML = isCountingDown ? '⬇️ นับลง' : '⬆️ นับขึ้น';
-      progressRing.style.stroke = isCountingDown ? '#f87171' : '#3b82f6';
-      if (!hasStarted) {
-        currentTime = isCountingDown ? (parseInt(endTimeInput.value)||0) : (parseInt(startTimeInput.value)||0);
+    function resetTimer() {
+        stopTimer(false);
+        targetSec = parseInt(input.value) || 30;
+        currentSec = isCountDown ? targetSec : 0;
+        statusBadge.textContent = "System Ready";
+        statusBadge.classList.remove('bg-red-900/40');
+        statusBadge.classList.add('bg-gray-800');
+        display.classList.remove('timer-glow-red');
         updateDisplay();
-      }
-    };
+    }
 
-    soundToggle.onclick = () => {
-      isSoundEnabled = !isSoundEnabled;
-      soundIcon.textContent = isSoundEnabled ? '🔊' : '🔈';
-      soundToggle.querySelector('span:last-child').textContent = `เสียง: ${isSoundEnabled ? 'เปิด' : 'ปิด'}`;
-    };
+    mainBtn.addEventListener('click', startTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    
+    input.addEventListener('change', () => {
+        if(!isRunning) resetTimer();
+    });
 
-    // Initial load
-    updateDisplay();
+    document.getElementById('mode-btn').addEventListener('click', function() {
+        isCountDown = !isCountDown;
+        this.querySelector('#mode-text').textContent = isCountDown ? "นับถอยหลัง" : "นับขึ้น";
+        this.querySelector('#mode-icon').textContent = isCountDown ? "⬇️" : "⬆️";
+        progressRing.style.stroke = isCountDown ? "var(--neon-cyan)" : "var(--neon-pink)";
+        resetTimer();
+    });
+
+    document.getElementById('sound-btn').addEventListener('click', function() {
+        isSoundOn = !isSoundOn;
+        this.innerHTML = isSoundOn ? '<span>🔊</span> เสียง: เปิด' : '<span>🔈</span> เสียง: ปิด';
+    });
+
+    // Initialize
+    resetTimer();
   </script>
  </body>
 </html>
