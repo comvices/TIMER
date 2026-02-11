@@ -3,254 +3,293 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRO Racing Timer</title>
+  <title>PKK Spelling Bee - Elite Timer</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Mitr:wght@400;600&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --neon-cyan: #00f3ff;
-      --neon-pink: #ff007f;
-      --neon-yellow: #fff300;
-    }
-    
-    body {
-      background: #050505;
-      color: white;
-      font-family: 'Kanit', sans-serif;
-      overflow-x: hidden;
+      --pink: #db2777;
+      --purple: #7c3aed;
+      --deep-purple: #4c1d95;
+      --yellow: #facc15;
+      --amber: #f59e0b;
     }
 
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    /* พื้นหลังเคลื่อนไหว ขาว-ชมพู-ม่วง */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ffffff, #fdf2f8, #f5f3ff, #f3e8ff);
+      background-size: 400% 400%;
+      animation: meshGradient 15s ease infinite;
+      font-family: 'Kanit', sans-serif;
+      padding: 1rem;
+    }
+
+    @keyframes meshGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .font-mitr { font-family: 'Mitr', sans-serif; }
     .font-digital { font-family: 'Orbitron', sans-serif; }
 
-    /* Glassmorphism Background */
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    /* การ์ดหลัก */
+    .main-card {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 3.5rem;
+      box-shadow: 0 40px 80px -15px rgba(124, 58, 237, 0.12);
+      width: 100%;
+      max-width: 720px;
+      padding: clamp(1.5rem, 5vw, 3rem);
     }
 
-    /* Glow Effect */
-    .timer-glow-cyan { text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan); color: var(--neon-cyan); }
-    .timer-glow-red { text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink); color: var(--neon-pink); }
-
-    /* Progress Ring Gradient */
-    #progress-ring {
-      transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
-      filter: drop-shadow(0 0 8px var(--neon-cyan));
+    /* กรอบสีขาวสำหรับตัวเลข */
+    .display-frame {
+      background: #ffffff;
+      border-radius: 2.5rem;
+      border: 1px solid rgba(124, 58, 237, 0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03), inset 0 0 15px rgba(124, 58, 237, 0.02);
+      padding: clamp(2rem, 8vw, 4rem) 1rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
     }
 
-    /* Animations */
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.02); opacity: 0.8; }
+    /* ตัวเลขเวลา */
+    #timer-display {
+      font-size: clamp(4rem, 18vw, 9.5rem);
+      line-height: 1;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      display: flex;
     }
-    .running-anim { animation: pulse 1.5s infinite ease-in-out; }
 
-    @keyframes shake {
-      0%, 100% { transform: translate(0,0); }
-      25% { transform: translate(-4px, 4px); }
-      75% { transform: translate(4px, -4px); }
+    /* อนิเมชันตอนทำงาน */
+    @keyframes subtlePulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.02); filter: brightness(1.1); }
     }
-    .shake-anim { animation: shake 0.1s infinite; }
+    .is-running #timer-display {
+      animation: subtlePulse 2s ease-in-out infinite;
+    }
 
-    /* Custom Input */
-    input[type="number"] {
-      background: rgba(0, 0, 0, 0.5);
-      border: 2px solid #333;
-      transition: all 0.3s;
+    /* สไตล์ Input */
+    .timer-input {
+      background: transparent;
+      border-bottom: 3px solid rgba(124, 58, 237, 0.1);
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', sans-serif;
     }
-    input[type="number"]:focus {
-      border-color: var(--neon-cyan);
-      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    .timer-input:focus {
       outline: none;
+      border-bottom-color: var(--pink);
+      transform: translateY(-2px);
     }
+
+    /* ปุ่ม START (ชมพู-ม่วง) */
+    .btn-action {
+      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 12px 24px -6px rgba(219, 39, 119, 0.4);
+    }
+    .btn-action:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 35px -8px rgba(124, 58, 237, 0.5);
+    }
+
+    /* ปุ่ม PAUSE (สีเหลืองทอง) ขนาดเท่ากับ START */
+    .btn-pause {
+      background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 12px 24px -6px rgba(245, 158, 11, 0.4);
+    }
+    .btn-pause:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 35px -8px rgba(245, 158, 11, 0.5);
+    }
+
+    .btn-action:active, .btn-pause:active { transform: scale(0.96); }
+
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   </style>
  </head>
- <body class="h-full flex items-center justify-center p-4">
+ <body>
   
-  <div class="w-full max-w-lg relative">
-    <!-- Decor Background -->
-    <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]"></div>
-    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-pink-500/10 rounded-full blur-[100px]"></div>
+  <div class="w-full max-w-2xl relative z-10">
 
-    <div class="glass-panel rounded-[2rem] p-8 relative z-10">
-      
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <h1 class="text-4xl font-extrabold italic tracking-tighter mb-1 bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
-            SPEED TIMER
-        </h1>
-        <div id="status-badge" class="inline-block px-4 py-1 rounded-full bg-gray-800 text-[10px] uppercase tracking-widest text-gray-400 border border-gray-700">
-            System Ready
-        </div>
-      </div>
-
-      <!-- Timer Circle -->
-      <div class="relative mx-auto w-72 h-72 mb-8 group">
-        <svg class="absolute inset-0 w-full h-full -rotate-90">
-          <circle cx="50%" cy="50%" r="46%" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="none" />
-          <circle id="progress-ring" cx="50%" cy="50%" r="46%" stroke="var(--neon-cyan)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="828" stroke-dashoffset="0" />
-        </svg>
+    <!-- Main Container -->
+    <main class="main-card text-center">
         
-        <div id="timer-container" class="absolute inset-0 flex flex-col items-center justify-center">
-          <span id="timer-display" class="font-digital text-7xl font-black timer-glow-cyan transition-all">00:00</span>
-          <span id="mode-indicator" class="text-xs mt-2 text-gray-500 font-bold tracking-widest uppercase">Target Mode</span>
-        </div>
-      </div>
-
-      <!-- Control Panel -->
-      <div class="space-y-6">
-        <!-- Input Section -->
-        <div class="flex flex-col items-center gap-3">
-            <label class="text-gray-400 text-sm font-semibold uppercase tracking-wider">ตั้งเวลาแข่งขัน (วินาที)</label>
-            <div class="relative w-full max-w-[200px]">
-                <input type="number" id="duration-input" value="30" min="1" class="w-full py-4 rounded-2xl text-center text-3xl font-digital text-white">
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500 font-bold">S</span>
+        <!-- White Display Frame -->
+        <section class="display-frame">
+            <div id="timer-display" class="font-digital">
+                00:00
             </div>
-        </div>
+            <div id="timer-status" class="text-purple-400 font-bold text-[10px] mt-6 tracking-[0.6em] uppercase opacity-70">
+                System Ready
+            </div>
+        </section>
 
-        <!-- Mode & Sound -->
-        <div class="flex justify-center gap-3">
-            <button id="mode-btn" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-bold transition-all border border-gray-600 flex items-center gap-2">
-                <span id="mode-icon">⬇️</span> <span id="mode-text">นับถอยหลัง</span>
+        <!-- Configuration Area -->
+        <section class="mb-12 max-w-[260px] mx-auto">
+            <p class="text-purple-900/40 text-[9px] uppercase tracking-widest mb-3 font-black">Set Countdown (Seconds)</p>
+            <input type="number" id="timer-seconds" value="60" 
+                   class="timer-input w-full text-center text-4xl text-purple-900 pb-2">
+        </section>
+
+        <!-- Control Navigation -->
+        <nav class="flex flex-col md:flex-row gap-5">
+            <button id="start-btn" class="flex-[3] btn-action text-white font-bold py-6 rounded-3xl flex items-center justify-center gap-3 text-2xl shadow-lg">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                START
             </button>
-            <button id="sound-btn" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-bold transition-all border border-gray-600 flex items-center gap-2">
-                <span id="sound-icon">🔊</span> เสียง: เปิด
+            
+            <button id="pause-btn" class="hidden flex-[3] btn-pause text-white font-bold py-6 rounded-3xl flex items-center justify-center gap-3 text-2xl shadow-lg">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+                PAUSE
             </button>
-        </div>
 
-        <!-- Main Actions -->
-        <div class="grid grid-cols-2 gap-4">
-            <button id="main-btn" class="col-span-1 bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-black font-black py-5 rounded-2xl text-xl uppercase tracking-tighter shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all active:scale-95">เริ่ม</button>
-            <button id="reset-btn" class="col-span-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-5 rounded-2xl text-xl uppercase tracking-tighter transition-all">รีเซ็ต</button>
-        </div>
-      </div>
+            <button id="reset-btn" class="flex-1 bg-purple-50/50 hover:bg-purple-100 text-purple-400 font-bold py-6 rounded-3xl transition-all flex items-center justify-center border border-purple-100/50">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+        </nav>
+    </main>
 
-    </div>
+    <!-- Meta Information -->
+    <footer class="text-center mt-4">
+      <p class="text-purple text-[10px] uppercase tracking-[1em] font-bold">
+        <kbd>By </kbd>KRUPHRATCHAYAWIT SRIKORKEA
+      </p>
+    </footer>
   </div>
 
   <script>
-    // Audio context
-    const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'); 
-    const soundEnd = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');   
-    const soundTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
-
-    let isRunning = false;
-    let isCountDown = true;
-    let isSoundOn = true;
-    let timer = null;
-    let currentSec = 0;
-    let targetSec = 30;
-
-    const display = document.getElementById('timer-display');
-    const input = document.getElementById('duration-input');
-    const mainBtn = document.getElementById('main-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const progressRing = document.getElementById('progress-ring');
-    const statusBadge = document.getElementById('status-badge');
-
-    function updateDisplay() {
-        const m = Math.floor(Math.abs(currentSec) / 60);
-        const s = Math.abs(currentSec) % 60;
-        display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        
-        // Progress ring logic
-        const total = parseInt(input.value) || 1;
-        const progress = isCountDown ? (currentSec / total) : (currentSec / total);
-        const offset = 828 - (828 * progress);
-        progressRing.style.strokeDashoffset = isFinite(offset) ? offset : 828;
-
-        // Warning state
-        if (isCountDown && currentSec <= 5 && currentSec > 0) {
-            display.classList.add('shake-anim', 'timer-glow-red');
-            if(isSoundOn) { soundTick.currentTime = 0; soundTick.play(); }
-        } else {
-            display.classList.remove('shake-anim');
-        }
-    }
-
-    function startTimer() {
-        targetSec = parseInt(input.value) || 0;
-        if (targetSec <= 0) return;
-
-        if (!isRunning) {
-            if (currentSec <= 0 || currentSec >= targetSec) {
-                currentSec = isCountDown ? targetSec : 0;
+    const AudioSystem = (() => {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const play = (type) => {
+            if (ctx.state === 'suspended') ctx.resume();
+            const now = ctx.currentTime;
+            const masterGain = ctx.createGain();
+            masterGain.connect(ctx.destination);
+            if (type === 'start') {
+                [523.25, 659.25, 783.99].forEach((f, i) => {
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(f, now + (i * 0.05));
+                    g.gain.setValueAtTime(0.2, now + (i * 0.05));
+                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.05) + 0.1);
+                    o.connect(g).connect(masterGain);
+                    o.start(now + (i * 0.05));
+                    o.stop(now + (i * 0.05) + 0.1);
+                });
+            } else if (type === 'end') {
+                [659.25, 830.61, 987.77, 1318.51].forEach((f, i) => {
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(f, now + (i * 0.1));
+                    g.gain.setValueAtTime(0.15, now + (i * 0.1));
+                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 1.2);
+                    o.connect(g).connect(masterGain);
+                    o.start(now + (i * 0.1));
+                    o.stop(now + (i * 0.1) + 1.2);
+                });
             }
-            
-            isRunning = true;
-            mainBtn.textContent = "หยุด";
-            mainBtn.classList.replace('from-cyan-400', 'from-yellow-400');
-            statusBadge.textContent = "🏁 Competition Live";
-            statusBadge.classList.replace('bg-gray-800', 'bg-red-900/40');
-            input.disabled = true;
+        };
+        return { play };
+    })();
 
-            if(isSoundOn) soundStart.play();
+    let interval = null;
+    let remaining = 60;
+    let isRunning = false;
 
-            timer = setInterval(() => {
-                if (isCountDown) currentSec--;
-                else currentSec++;
+    const el = {
+        display: document.getElementById('timer-display'),
+        status: document.getElementById('timer-status'),
+        input: document.getElementById('timer-seconds'),
+        startBtn: document.getElementById('start-btn'),
+        pauseBtn: document.getElementById('pause-btn'),
+        resetBtn: document.getElementById('reset-btn')
+    };
 
-                updateDisplay();
-
-                if ((isCountDown && currentSec <= 0) || (!isCountDown && currentSec >= targetSec)) {
-                    stopTimer(true);
-                }
-            }, 1000);
-        } else {
-            stopTimer(false);
-        }
+    function updateView() {
+        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+        const s = (remaining % 60).toString().padStart(2, '0');
+        el.display.textContent = `${m}:${s}`;
     }
 
-    function stopTimer(isFinished) {
-        clearInterval(timer);
+    el.startBtn.onclick = () => {
+        if (isRunning) return;
+        if (remaining <= 0) remaining = parseInt(el.input.value) || 0;
+        if (remaining <= 0) return;
+
+        AudioSystem.play('start');
+        isRunning = true;
+        el.startBtn.classList.add('hidden');
+        el.pauseBtn.classList.remove('hidden');
+        el.status.textContent = "Counting Down";
+        document.body.classList.add('is-running');
+
+        interval = setInterval(() => {
+            remaining--;
+            updateView();
+            if (remaining <= 0) {
+                clearInterval(interval);
+                isRunning = false;
+                AudioSystem.play('end');
+                el.status.textContent = "Time Up!";
+                el.startBtn.classList.remove('hidden');
+                el.pauseBtn.classList.add('hidden');
+                document.body.classList.remove('is-running');
+            }
+        }, 1000);
+    };
+
+    el.pauseBtn.onclick = () => {
+        clearInterval(interval);
         isRunning = false;
-        mainBtn.textContent = "เริ่ม";
-        mainBtn.classList.replace('from-yellow-400', 'from-cyan-400');
-        statusBadge.textContent = isFinished ? "🔚 Finish" : "⏸ Paused";
-        input.disabled = false;
-        
-        if (isFinished) {
-            if(isSoundOn) soundEnd.play();
-            display.classList.add('timer-glow-red');
-            setTimeout(() => display.classList.remove('timer-glow-red'), 3000);
-        }
-    }
+        el.startBtn.classList.remove('hidden');
+        el.pauseBtn.classList.add('hidden');
+        el.status.textContent = "Paused";
+        document.body.classList.remove('is-running');
+    };
 
-    function resetTimer() {
-        stopTimer(false);
-        targetSec = parseInt(input.value) || 30;
-        currentSec = isCountDown ? targetSec : 0;
-        statusBadge.textContent = "System Ready";
-        statusBadge.classList.remove('bg-red-900/40');
-        statusBadge.classList.add('bg-gray-800');
-        display.classList.remove('timer-glow-red');
-        updateDisplay();
-    }
+    el.resetBtn.onclick = () => {
+        clearInterval(interval);
+        isRunning = false;
+        remaining = parseInt(el.input.value) || 0;
+        updateView();
+        el.status.textContent = "System Ready";
+        el.startBtn.classList.remove('hidden');
+        el.pauseBtn.classList.add('hidden');
+        document.body.classList.remove('is-running');
+    };
 
-    mainBtn.addEventListener('click', startTimer);
-    resetBtn.addEventListener('click', resetTimer);
-    
-    input.addEventListener('change', () => {
-        if(!isRunning) resetTimer();
-    });
+    el.input.oninput = () => { 
+        if(!isRunning) { 
+            remaining = parseInt(el.input.value) || 0; 
+            updateView(); 
+        } 
+    };
 
-    document.getElementById('mode-btn').addEventListener('click', function() {
-        isCountDown = !isCountDown;
-        this.querySelector('#mode-text').textContent = isCountDown ? "นับถอยหลัง" : "นับขึ้น";
-        this.querySelector('#mode-icon').textContent = isCountDown ? "⬇️" : "⬆️";
-        progressRing.style.stroke = isCountDown ? "var(--neon-cyan)" : "var(--neon-pink)";
-        resetTimer();
-    });
-
-    document.getElementById('sound-btn').addEventListener('click', function() {
-        isSoundOn = !isSoundOn;
-        this.innerHTML = isSoundOn ? '<span>🔊</span> เสียง: เปิด' : '<span>🔈</span> เสียง: ปิด';
-    });
-
-    // Initialize
-    resetTimer();
+    updateView();
   </script>
  </body>
 </html>
