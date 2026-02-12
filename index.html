@@ -1,295 +1,251 @@
-<!doctype html>
-<html lang="th" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PKK Spelling Bee - Elite Timer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Mitr:wght@400;600&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --pink: #db2777;
-      --purple: #7c3aed;
-      --deep-purple: #4c1d95;
-      --yellow: #facc15;
-      --amber: #f59e0b;
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    /* พื้นหลังเคลื่อนไหว ขาว-ชมพู-ม่วง */
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(-45deg, #ffffff, #fdf2f8, #f5f3ff, #f3e8ff);
-      background-size: 400% 400%;
-      animation: meshGradient 15s ease infinite;
-      font-family: 'Kanit', sans-serif;
-      padding: 1rem;
-    }
-
-    @keyframes meshGradient {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .font-mitr { font-family: 'Mitr', sans-serif; }
-    .font-digital { font-family: 'Orbitron', sans-serif; }
-
-    /* การ์ดหลัก */
-    .main-card {
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 3.5rem;
-      box-shadow: 0 40px 80px -15px rgba(124, 58, 237, 0.12);
-      width: 100%;
-      max-width: 720px;
-      padding: clamp(1.5rem, 5vw, 3rem);
-    }
-
-    /* กรอบสีขาวสำหรับตัวเลข */
-    .display-frame {
-      background: #ffffff;
-      border-radius: 2.5rem;
-      border: 1px solid rgba(124, 58, 237, 0.1);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.03), inset 0 0 15px rgba(124, 58, 237, 0.02);
-      padding: clamp(2rem, 8vw, 4rem) 1rem;
-      margin-bottom: 2.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 240px;
-    }
-
-    /* ตัวเลขเวลา */
-    #timer-display {
-      font-size: clamp(4rem, 18vw, 9.5rem);
-      line-height: 1;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      white-space: nowrap;
-      display: flex;
-    }
-
-    /* อนิเมชันตอนทำงาน */
-    @keyframes subtlePulse {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.02); filter: brightness(1.1); }
-    }
-    .is-running #timer-display {
-      animation: subtlePulse 2s ease-in-out infinite;
-    }
-
-    /* สไตล์ Input */
-    .timer-input {
-      background: transparent;
-      border-bottom: 3px solid rgba(124, 58, 237, 0.1);
-      transition: all 0.3s ease;
-      font-family: 'Orbitron', sans-serif;
-    }
-    .timer-input:focus {
-      outline: none;
-      border-bottom-color: var(--pink);
-      transform: translateY(-2px);
-    }
-
-    /* ปุ่ม START (ชมพู-ม่วง) */
-    .btn-action {
-      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 12px 24px -6px rgba(219, 39, 119, 0.4);
-    }
-    .btn-action:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 35px -8px rgba(124, 58, 237, 0.5);
-    }
-
-    /* ปุ่ม PAUSE (สีเหลืองทอง) ขนาดเท่ากับ START */
-    .btn-pause {
-      background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 12px 24px -6px rgba(245, 158, 11, 0.4);
-    }
-    .btn-pause:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 35px -8px rgba(245, 158, 11, 0.5);
-    }
-
-    .btn-action:active, .btn-pause:active { transform: scale(0.96); }
-
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  </style>
- </head>
- <body>
-  
-  <div class="w-full max-w-2xl relative z-10">
-
-    <!-- Main Container -->
-    <main class="main-card text-center">
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIMER By KRUPHRAT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Anuphan:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Anuphan', sans-serif; }
+        .timer-font { font-family: 'JetBrains Mono', monospace; }
         
-        <!-- White Display Frame -->
-        <section class="display-frame">
-            <div id="timer-display" class="font-digital">
+        /* Animation เมื่อเวลาหมด */
+        .time-up-active {
+            animation: pulse-danger 1.5s infinite;
+        }
+        @keyframes pulse-danger {
+            0%, 100% { background-color: #ffffff; transform: scale(1); }
+            50% { background-color: #fee2e2; transform: scale(1.05); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input::-webkit-outer-spin-button, 
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="mainCard" class="glass-card rounded-[2.5rem] p-8 w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all">
+        
+        <!-- ส่วนเลือกโหมด -->
+        <div class="flex bg-slate-100/80 p-1.5 rounded-2xl mb-8">
+            <button onclick="setMode('down')" id="tabDown" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white shadow-sm text-indigo-600">
+                นับถอยหลัง
+            </button>
+            <button onclick="setMode('up')" id="tabUp" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-indigo-400">
+                นับเดินหน้า
+            </button>
+        </div>
+
+        <!-- หน้าจอแสดงผล -->
+        <div class="relative mb-8">
+            <div id="display" class="timer-font text-8xl font-bold text-center text-slate-800 tabular-nums tracking-tighter">
                 00:00
             </div>
-            <div id="timer-status" class="text-purple-400 font-bold text-[10px] mt-6 tracking-[0.6em] uppercase opacity-70">
-                System Ready
+        </div>
+
+        <div class="space-y-6">
+            <!-- ส่วนกรอกเวลา -->
+            <div id="inputGroup" class="space-y-4">
+                <div class="relative">
+                    <label class="block text-center text-slate-400 text-[10px] uppercase tracking-[0.3em] mb-3 font-bold">ระบุเวลา (วินาที)</label>
+                    <input type="number" id="durationInput" value="60" 
+                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 text-center text-3xl font-bold outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-slate-700">
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="addTime(30)" class="py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-bold rounded-lg transition-all">+30 วิ</button>
+                    <button onclick="addTime(60)" class="py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-bold rounded-lg transition-all">+1 นาที</button>
+                    <button onclick="addTime(300)" class="py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-bold rounded-lg transition-all">+5 นาที</button>
+                </div>
             </div>
-        </section>
 
-        <!-- Configuration Area -->
-        <section class="mb-12 max-w-[260px] mx-auto">
-            <p class="text-purple-900/40 text-[9px] uppercase tracking-widest mb-3 font-black">Set Countdown (Seconds)</p>
-            <input type="number" id="timer-seconds" value="60" 
-                   class="timer-input w-full text-center text-4xl text-purple-900 pb-2">
-        </section>
-
-        <!-- Control Navigation -->
-        <nav class="flex flex-col md:flex-row gap-5">
-            <button id="start-btn" class="flex-[3] btn-action text-white font-bold py-6 rounded-3xl flex items-center justify-center gap-3 text-2xl shadow-lg">
-                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                START
-            </button>
+            <!-- ปุ่มควบคุม -->
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="toggleTimer()" id="mainBtn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <span id="btnIcon">▶</span> <span id="btnText">เริ่มทำงาน</span>
+                </button>
+                <button onclick="resetTimer()" 
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-5 rounded-2xl transition-all active:scale-95">
+                    เริ่มใหม่
+                </button>
+            </div>
             
-            <button id="pause-btn" class="hidden flex-[3] btn-pause text-white font-bold py-6 rounded-3xl flex items-center justify-center gap-3 text-2xl shadow-lg">
-                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
-                PAUSE
-            </button>
+            <p id="audioStatus" class="text-center text-[10px] text-slate-400 uppercase tracking-widest font-bold h-4"></p>
+        </div>
+    </div>
 
-            <button id="reset-btn" class="flex-1 bg-purple-50/50 hover:bg-purple-100 text-purple-400 font-bold py-6 rounded-3xl transition-all flex items-center justify-center border border-purple-100/50">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15"/></svg>
-            </button>
-        </nav>
-    </main>
+    <!-- ไฟล์เสียง (ตรวจสอบชื่อไฟล์ให้ตรงกับในเครื่อง) -->
+    <audio id="startSound" preload="auto" src="start.mp3"></audio>
+    <audio id="endSound" preload="auto" src="END.mp3"></audio>
 
-    <!-- Meta Information -->
-    <footer class="text-center mt-4">
-      <p class="text-purple text-[10px] uppercase tracking-[1em] font-bold">
-        <kbd>By </kbd>KRUPHRATCHAYAWIT SRIKORKEA
-      </p>
-    </footer>
-  </div>
+    <script>
+        let timerInterval;
+        let remainingTime = 0; // เก็บเวลาปัจจุบันเป็นวินาที
+        let isRunning = false;
+        let currentMode = 'down';
+        let audioUnlocked = false;
+        let lastTimestamp = 0;
 
-  <script>
-    const AudioSystem = (() => {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const play = (type) => {
-            if (ctx.state === 'suspended') ctx.resume();
-            const now = ctx.currentTime;
-            const masterGain = ctx.createGain();
-            masterGain.connect(ctx.destination);
-            if (type === 'start') {
-                [523.25, 659.25, 783.99].forEach((f, i) => {
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(f, now + (i * 0.05));
-                    g.gain.setValueAtTime(0.2, now + (i * 0.05));
-                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.05) + 0.1);
-                    o.connect(g).connect(masterGain);
-                    o.start(now + (i * 0.05));
-                    o.stop(now + (i * 0.05) + 0.1);
-                });
-            } else if (type === 'end') {
-                [659.25, 830.61, 987.77, 1318.51].forEach((f, i) => {
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    o.type = 'triangle';
-                    o.frequency.setValueAtTime(f, now + (i * 0.1));
-                    g.gain.setValueAtTime(0.15, now + (i * 0.1));
-                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 1.2);
-                    o.connect(g).connect(masterGain);
-                    o.start(now + (i * 0.1));
-                    o.stop(now + (i * 0.1) + 1.2);
-                });
-            }
+        const display = document.getElementById('display');
+        const mainBtn = document.getElementById('mainBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const durationInput = document.getElementById('durationInput');
+        const mainCard = document.getElementById('mainCard');
+        const startSound = document.getElementById('startSound');
+        const endSound = document.getElementById('endSound');
+
+        // ฟังก์ชันเบื้องต้น: ดึงค่าเริ่มต้นมาโชว์
+        window.onload = () => {
+            remainingTime = parseInt(durationInput.value) || 0;
+            updateDisplay(remainingTime);
         };
-        return { play };
-    })();
 
-    let interval = null;
-    let remaining = 60;
-    let isRunning = false;
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            [startSound, endSound].forEach(audio => {
+                audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+            });
+            audioUnlocked = true;
+        }
 
-    const el = {
-        display: document.getElementById('timer-display'),
-        status: document.getElementById('timer-status'),
-        input: document.getElementById('timer-seconds'),
-        startBtn: document.getElementById('start-btn'),
-        pauseBtn: document.getElementById('pause-btn'),
-        resetBtn: document.getElementById('reset-btn')
-    };
+        function setMode(mode) {
+            if (isRunning) pauseTimer();
+            currentMode = mode;
+            
+            const isDown = mode === 'down';
+            document.getElementById('tabDown').className = isDown ? "flex-1 py-2.5 rounded-xl text-sm font-bold bg-white shadow-sm text-indigo-600 transition-all" : "flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-400 transition-all";
+            document.getElementById('tabUp').className = !isDown ? "flex-1 py-2.5 rounded-xl text-sm font-bold bg-white shadow-sm text-indigo-600 transition-all" : "flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-400 transition-all";
+            document.getElementById('inputGroup').style.display = isDown ? 'block' : 'none';
+            
+            resetTimer();
+        }
 
-    function updateView() {
-        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
-        const s = (remaining % 60).toString().padStart(2, '0');
-        el.display.textContent = `${m}:${s}`;
-    }
-
-    el.startBtn.onclick = () => {
-        if (isRunning) return;
-        if (remaining <= 0) remaining = parseInt(el.input.value) || 0;
-        if (remaining <= 0) return;
-
-        AudioSystem.play('start');
-        isRunning = true;
-        el.startBtn.classList.add('hidden');
-        el.pauseBtn.classList.remove('hidden');
-        el.status.textContent = "Counting Down";
-        document.body.classList.add('is-running');
-
-        interval = setInterval(() => {
-            remaining--;
-            updateView();
-            if (remaining <= 0) {
-                clearInterval(interval);
-                isRunning = false;
-                AudioSystem.play('end');
-                el.status.textContent = "Time Up!";
-                el.startBtn.classList.remove('hidden');
-                el.pauseBtn.classList.add('hidden');
-                document.body.classList.remove('is-running');
+        function addTime(seconds) {
+            const currentVal = parseInt(durationInput.value) || 0;
+            durationInput.value = currentVal + seconds;
+            if (!isRunning && currentMode === 'down') {
+                remainingTime = parseInt(durationInput.value);
+                updateDisplay(remainingTime);
             }
-        }, 1000);
-    };
+        }
 
-    el.pauseBtn.onclick = () => {
-        clearInterval(interval);
-        isRunning = false;
-        el.startBtn.classList.remove('hidden');
-        el.pauseBtn.classList.add('hidden');
-        el.status.textContent = "Paused";
-        document.body.classList.remove('is-running');
-    };
+        function updateDisplay(totalSeconds) {
+            const mins = Math.floor(Math.abs(totalSeconds) / 60);
+            const secs = Math.abs(totalSeconds) % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            if (currentMode === 'down' && totalSeconds <= 10 && totalSeconds > 0) {
+                display.classList.add('text-rose-500');
+            } else {
+                display.classList.remove('text-rose-500');
+            }
+        }
 
-    el.resetBtn.onclick = () => {
-        clearInterval(interval);
-        isRunning = false;
-        remaining = parseInt(el.input.value) || 0;
-        updateView();
-        el.status.textContent = "System Ready";
-        el.startBtn.classList.remove('hidden');
-        el.pauseBtn.classList.add('hidden');
-        document.body.classList.remove('is-running');
-    };
+        function toggleTimer() {
+            unlockAudio();
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
 
-    el.input.oninput = () => { 
-        if(!isRunning) { 
-            remaining = parseInt(el.input.value) || 0; 
-            updateView(); 
-        } 
-    };
+        function startTimer() {
+            // กรณีเริ่มใหม่จาก 0 ในโหมดนับถอยหลัง
+            if (currentMode === 'down' && remainingTime <= 0) {
+                remainingTime = parseInt(durationInput.value) || 0;
+                if (remainingTime <= 0) return alert("กรุณาระบุเวลา");
+            }
 
-    updateView();
-  </script>
- </body>
+            isRunning = true;
+            updateButtonUI(true);
+            mainCard.classList.remove('time-up-active');
+            
+            startSound.currentTime = 0;
+            startSound.play().catch(() => {});
+
+            lastTimestamp = Date.now();
+
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const deltaTime = Math.floor((now - lastTimestamp) / 1000);
+
+                if (deltaTime >= 1) {
+                    if (currentMode === 'down') {
+                        remainingTime -= deltaTime;
+                        if (remainingTime <= 0) {
+                            remainingTime = 0;
+                            finishTimer();
+                        }
+                    } else {
+                        remainingTime += deltaTime;
+                    }
+                    lastTimestamp = now;
+                    updateDisplay(remainingTime);
+                }
+            }, 100);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            updateButtonUI(false);
+        }
+
+        function finishTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            updateDisplay(0);
+            endSound.currentTime = 0;
+            endSound.play().catch(() => {});
+            mainCard.classList.add('time-up-active');
+            updateButtonUI(false);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            mainCard.classList.remove('time-up-active');
+            
+            if (currentMode === 'down') {
+                remainingTime = parseInt(durationInput.value) || 0;
+            } else {
+                remainingTime = 0;
+            }
+            
+            updateDisplay(remainingTime);
+            updateButtonUI(false);
+        }
+
+        function updateButtonUI(running) {
+            if (running) {
+                btnText.innerText = "หยุดชั่วคราว";
+                btnIcon.innerText = "⏸";
+                mainBtn.classList.replace('bg-indigo-600', 'bg-rose-500');
+            } else {
+                btnText.innerText = (remainingTime > 0 && currentMode === 'down') ? "ทำต่อ" : "เริ่มทำงาน";
+                btnIcon.innerText = "▶";
+                mainBtn.classList.replace('bg-rose-500', 'bg-indigo-600');
+            }
+        }
+
+        durationInput.addEventListener('input', () => {
+            if (!isRunning && currentMode === 'down') {
+                remainingTime = parseInt(durationInput.value) || 0;
+                updateDisplay(remainingTime);
+            }
+        });
+    </script>
+</body>
 </html>
